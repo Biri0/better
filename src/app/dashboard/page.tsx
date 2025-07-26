@@ -25,7 +25,7 @@ export default async function Dashboard() {
   ];
 
   return (
-    <div className="mx-32 mt-4">
+    <div className="m-1 md:mx-32 md:mt-4">
       <Card>
         <CardHeader>Hi {session.user.name}!</CardHeader>
         <CardContent>You have {session.user.credits} credits</CardContent>
