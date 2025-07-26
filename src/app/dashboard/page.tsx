@@ -8,5 +8,10 @@ export default async function Dashboard() {
     redirect("/api/auth/signin?callbackUrl=/dashboard");
   }
 
-  return <h1>Hello, {session.user.name ?? "World"}!</h1>;
+  return (
+    <h1>
+      Hello, {session.user.name ?? "World"}! You have{" "}
+      {session.user.credits ?? 0} credits!
+    </h1>
+  );
 }
