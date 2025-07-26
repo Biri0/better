@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import { index, pgTableCreator, primaryKey } from "drizzle-orm/pg-core";
+import { index, pgTableCreator, primaryKey, pgEnum } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
 
 /**
@@ -51,6 +51,8 @@ export const users = createTable("user", (d) => ({
 
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
+  userBets: many(userBets),
+  betsPlaced: many(betsPlaced),
 }));
 
 export const accounts = createTable(
@@ -107,3 +109,98 @@ export const verificationTokens = createTable(
   }),
   (t) => [primaryKey({ columns: [t.identifier, t.token] })],
 );
+
+export const bets = createTable("bet", (d) => ({
+  id: d
+    .varchar({ length: 255 })
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  title: d.varchar({ length: 32 }).notNull(),
+  description: d.varchar({ length: 255 }).notNull(),
+  endTime: d.timestamp({ mode: "date", withTimezone: true }).notNull(),
+  expirationTime: d.timestamp({ mode: "date", withTimezone: true }).notNull(),
+  createdBy: d
+    .varchar({ length: 255 })
+    .notNull()
+    .references(() => users.id),
+}));
+
+export const userBets = createTable(
+  "user_bet",
+  (d) => ({
+    userId: d
+      .varchar({ length: 255 })
+      .notNull()
+      .references(() => users.id),
+    betId: d
+      .varchar({ length: 255 })
+      .notNull()
+      .references(() => bets.id),
+  }),
+  (t) => [
+    primaryKey({ columns: [t.userId, t.betId] }),
+    index("user_bet_user_idx").on(t.userId),
+    index("user_bet_bet_idx").on(t.betId),
+  ],
+);
+
+export const userBetsRelations = relations(userBets, ({ one }) => ({
+  user: one(users, { fields: [userBets.userId], references: [users.id] }),
+  bet: one(bets, { fields: [userBets.betId], references: [bets.id] }),
+}));
+
+export const betsRelations = relations(bets, ({ many }) => ({
+  userBets: many(userBets),
+  betOptions: many(betOptions),
+  betsPlaced: many(betsPlaced),
+}));
+
+export const betStatus = pgEnum("bet_status", ["open", "won", "lost"]);
+
+export const betOptions = createTable("bet_option", (d) => ({
+  optionId: d
+    .varchar({ length: 255 })
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  betId: d
+    .varchar({ length: 255 })
+    .notNull()
+    .references(() => bets.id),
+  label: d.varchar({ length: 32 }).notNull(),
+  status: betStatus().notNull().default("open"),
+}));
+
+export const betOptionsRelations = relations(betOptions, ({ one }) => ({
+  bet: one(bets, { fields: [betOptions.betId], references: [bets.id] }),
+}));
+
+export const betsPlaced = createTable(
+  "bet_placed",
+  (d) => ({
+    userId: d
+      .varchar({ length: 255 })
+      .notNull()
+      .references(() => users.id),
+    betId: d
+      .varchar({ length: 255 })
+      .notNull()
+      .references(() => bets.id),
+    staked: d.integer().notNull(),
+    createdAt: d
+      .timestamp({ mode: "date", withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  }),
+  (t) => [
+    primaryKey({ columns: [t.userId, t.betId] }),
+    index("bets_placed_user_idx").on(t.userId),
+    index("bets_placed_bet_idx").on(t.betId),
+  ],
+);
+
+export const betsPlacedRelations = relations(betsPlaced, ({ one }) => ({
+  user: one(users, { fields: [betsPlaced.userId], references: [users.id] }),
+  bet: one(bets, { fields: [betsPlaced.betId], references: [bets.id] }),
+}));
