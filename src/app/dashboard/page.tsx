@@ -10,6 +10,7 @@ import {
   TableRow,
   TableCell,
 } from "~/components/ui/table";
+import Link from "next/link";
 
 export default async function Dashboard() {
   const session = await auth();
@@ -31,7 +32,9 @@ export default async function Dashboard() {
         <CardContent>You have {session.user.credits} credits</CardContent>
       </Card>
       <div className="my-16 flex justify-center">
-        <Button>Create a bet</Button>
+        <Button>
+          <Link href="/bet/new">Create a bet</Link>
+        </Button>
       </div>
       <Table>
         <TableHeader>
