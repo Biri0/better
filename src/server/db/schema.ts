@@ -124,6 +124,10 @@ export const bets = createTable("bet", (d) => ({
     .varchar({ length: 255 })
     .notNull()
     .references(() => users.id),
+  createdAt: d
+    .timestamp({ mode: "date", withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
 }));
 
 export const userBets = createTable(

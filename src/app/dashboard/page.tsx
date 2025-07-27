@@ -11,6 +11,9 @@ import {
   TableCell,
 } from "~/components/ui/table";
 import Link from "next/link";
+import { db } from "~/server/db";
+import { bets as betsTable } from "~/server/db/schema";
+import { desc } from "drizzle-orm";
 
 export default async function Dashboard() {
   const session = await auth();
@@ -19,11 +22,11 @@ export default async function Dashboard() {
     redirect("/api/auth/signin?callbackUrl=/dashboard");
   }
 
-  const bets = [
-    { title: "My bet", createdBy: "Me", expires: "Tomorrow" },
-    { title: "Another bet", createdBy: "Alice", expires: "Next week" },
-    { title: "Yet another bet", createdBy: "Bob", expires: "Next month" },
-  ];
+  const bets = await db
+    .select()
+    .from(betsTable)
+    .orderBy(desc(betsTable.createdAt))
+    .limit(5);
 
   return (
     <div className="m-1 md:mx-32 md:mt-4">
@@ -50,7 +53,7 @@ export default async function Dashboard() {
             <TableRow key={idx}>
               <TableCell>{bet.title}</TableCell>
               <TableCell>{bet.createdBy}</TableCell>
-              <TableCell>{bet.expires}</TableCell>
+              <TableCell>{bet.expirationTime.toLocaleString()}</TableCell>
               <TableCell>
                 <Button>Show more</Button>
               </TableCell>
