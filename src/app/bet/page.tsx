@@ -12,11 +12,12 @@ import {
 import Link from "next/link";
 
 type PageProps = {
-  searchParams: Record<string, string>;
+  searchParams: Promise<Record<string, string>>;
 };
 
 export default async function Bet({ searchParams }: PageProps) {
-  const betId = searchParams.id;
+  const resolvedSearchParams = await searchParams;
+  const betId = resolvedSearchParams.id;
   const bet = betId
     ? await db.selectDistinct().from(bets).where(eq(bets.id, betId))
     : [];
