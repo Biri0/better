@@ -12,8 +12,8 @@ import {
 } from "~/components/ui/table";
 import Link from "next/link";
 import { db } from "~/server/db";
-import { bets as betsTable } from "~/server/db/schema";
-import { desc } from "drizzle-orm";
+import { bets as betsTable, users } from "~/server/db/schema";
+import { desc, eq } from "drizzle-orm";
 
 export default async function Dashboard() {
   const session = await auth();
@@ -23,13 +23,21 @@ export default async function Dashboard() {
   }
 
   const bets = await db
-    .select()
+    .select({
+      id: betsTable.id,
+      title: betsTable.title,
+      createdBy: betsTable.createdBy,
+      creatorName: users.name,
+      expirationTime: betsTable.expirationTime,
+      createdAt: betsTable.createdAt,
+    })
     .from(betsTable)
+    .leftJoin(users, eq(betsTable.createdBy, users.id))
     .orderBy(desc(betsTable.createdAt))
     .limit(5);
 
   return (
-    <div className="m-1 md:mx-32 md:mt-4">
+    <div className="md:mx-16 md:mt-4 lg:mx-32">
       <Card>
         <CardHeader>Hi {session.user.name}!</CardHeader>
         <CardContent>You have {session.user.credits} credits</CardContent>
@@ -43,8 +51,8 @@ export default async function Dashboard() {
         <TableHeader>
           <TableRow>
             <TableHead>Title</TableHead>
-            <TableHead>Created by</TableHead>
-            <TableHead>Expires</TableHead>
+            <TableHead className="hidden md:table-cell">Created by</TableHead>
+            <TableHead className="hidden sm:table-cell">Expires</TableHead>
             <TableHead>Action</TableHead>
           </TableRow>
         </TableHeader>
@@ -52,8 +60,12 @@ export default async function Dashboard() {
           {bets.map((bet, idx) => (
             <TableRow key={idx}>
               <TableCell>{bet.title}</TableCell>
-              <TableCell>{bet.createdBy}</TableCell>
-              <TableCell>{bet.expirationTime.toLocaleString()}</TableCell>
+              <TableCell className="hidden md:table-cell">
+                {bet.creatorName ?? "Unknown"}
+              </TableCell>
+              <TableCell className="hidden sm:table-cell">
+                {bet.expirationTime.toLocaleString()}
+              </TableCell>
               <TableCell>
                 <Button>
                   <Link href={`/bet?id=${bet.id}`}>Show more</Link>
