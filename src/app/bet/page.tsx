@@ -11,11 +11,11 @@ import {
 } from "~/components/ui/card";
 import Link from "next/link";
 
-export default async function Bet({
-  searchParams,
-}: {
-  searchParams: { id: string };
-}) {
+type PageProps = {
+  searchParams: Record<string, string>;
+};
+
+export default async function Bet({ searchParams }: PageProps) {
   const betId = searchParams.id;
   const bet = betId
     ? await db.selectDistinct().from(bets).where(eq(bets.id, betId))
