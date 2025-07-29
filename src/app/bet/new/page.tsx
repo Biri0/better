@@ -20,6 +20,7 @@ import { formSchema } from "./schema";
 import { createBet } from "./actions";
 import { Textarea } from "~/components/ui/textarea";
 import Calendar24 from "~/components/calendar-24";
+import Link from "next/link";
 
 export default function NewBetPage() {
   const form = useForm<z.infer<typeof formSchema>>({
@@ -102,7 +103,14 @@ export default function NewBetPage() {
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <div className="flex gap-4">
+          <Button type="submit">Submit</Button>
+          <Link href="/dashboard">
+            <Button type="button" variant="outline">
+              Back to Dashboard
+            </Button>
+          </Link>
+        </div>
       </form>
     </Form>
   );
