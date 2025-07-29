@@ -55,7 +55,9 @@ export default async function Dashboard() {
               <TableCell>{bet.createdBy}</TableCell>
               <TableCell>{bet.expirationTime.toLocaleString()}</TableCell>
               <TableCell>
-                <Button>Show more</Button>
+                <Button>
+                  <Link href={`/bet?id=${bet.id}`}>Show more</Link>
+                </Button>
               </TableCell>
             </TableRow>
           ))}
