@@ -35,8 +35,8 @@ export default function NewBetPage() {
     defaultValues: {
       title: "",
       description: "",
-      endTime: new Date(),
-      expirationTime: new Date(),
+      endTime: undefined,
+      expirationTime: undefined,
       optionLabels: ["", ""],
       optionOdds: [1.5, 1.5],
       fee: 0,

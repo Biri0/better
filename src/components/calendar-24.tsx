@@ -24,7 +24,6 @@ export default function Calendar24({
 }: Calendar24Props) {
   const [open, setOpen] = React.useState(false);
 
-  // Estrai data e tempo dal valore Date esistente
   const [date, setDate] = React.useState<Date | undefined>(
     value
       ? new Date(value.getFullYear(), value.getMonth(), value.getDate())
@@ -32,32 +31,29 @@ export default function Calendar24({
   );
   const [time, setTime] = React.useState<string>(
     value
-      ? `${value.getHours().toString().padStart(2, "0")}:${value.getMinutes().toString().padStart(2, "0")}:${value.getSeconds().toString().padStart(2, "0")}`
-      : "10:30:00",
+      ? `${value.getHours().toString().padStart(2, "0")}:${value.getMinutes().toString().padStart(2, "0")}`
+      : "",
   );
-
-  // Aggiorna gli stati interni quando il valore esterno cambia
   React.useEffect(() => {
     if (value) {
       setDate(new Date(value.getFullYear(), value.getMonth(), value.getDate()));
       setTime(
-        `${value.getHours().toString().padStart(2, "0")}:${value.getMinutes().toString().padStart(2, "0")}:${value.getSeconds().toString().padStart(2, "0")}`,
+        `${value.getHours().toString().padStart(2, "0")}:${value.getMinutes().toString().padStart(2, "0")}`,
       );
     }
   }, [value]);
 
-  // Combina data e tempo e notifica il cambiamento
   const handleDateTimeChange = React.useCallback(
     (newDate?: Date, newTime?: string) => {
       const currentDate = newDate ?? date;
       const currentTime = newTime ?? time;
 
-      if (currentDate && currentTime) {
-        const [hours, minutes, seconds] = currentTime.split(":").map(Number);
+      if (currentDate && currentTime && currentTime.trim() !== "") {
+        const [hours, minutes] = currentTime.split(":").map(Number);
         const combined = new Date(currentDate);
-        combined.setHours(hours ?? 0, minutes ?? 0, seconds ?? 0, 0);
+        combined.setHours(hours ?? 0, minutes ?? 0, 0, 0);
         onChange?.(combined);
-      } else if (!currentDate) {
+      } else if (!currentDate || !currentTime || currentTime.trim() === "") {
         onChange?.(undefined);
       }
     },
@@ -111,7 +107,6 @@ export default function Calendar24({
         <Input
           type="time"
           id="time-picker"
-          step="1"
           value={time}
           onChange={(e) => handleTimeChange(e.target.value)}
           className="bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
