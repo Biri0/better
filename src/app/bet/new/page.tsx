@@ -39,6 +39,8 @@ export default function NewBetPage() {
       expirationTime: new Date(),
       optionLabels: ["", ""],
       optionOdds: [1.5, 1.5],
+      fee: 0,
+      lossCap: 100,
     },
   });
 
@@ -83,7 +85,18 @@ export default function NewBetPage() {
   };
 
   const handleSubmit = async (data: FormData) => {
-    await createBet({ ...data, optionLabels: options, optionOdds: odds });
+    const result = await createBet({
+      ...data,
+      optionLabels: options,
+      optionOdds: odds,
+    });
+
+    if (!result.success && result.error) {
+      form.setError("lossCap", {
+        type: "manual",
+        message: result.error,
+      });
+    }
   };
 
   return (
@@ -154,6 +167,58 @@ export default function NewBetPage() {
               </FormControl>
               <FormDescription>
                 Please enter an expiration for your bet.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="fee"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Fee (%)</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="0.25"
+                  placeholder="0.05"
+                  {...field}
+                  onChange={(e) =>
+                    field.onChange(parseFloat(e.target.value) || 0)
+                  }
+                />
+              </FormControl>
+              <FormDescription>
+                Fee percentage (0-25%). Example: 0.05 = 5%
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="lossCap"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Loss Cap (Credits)</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  min="1"
+                  placeholder="100"
+                  {...field}
+                  onChange={(e) =>
+                    field.onChange(parseInt(e.target.value) || 1)
+                  }
+                />
+              </FormControl>
+              <FormDescription>
+                Maximum credits you&apos;re willing to lose on this bet.
               </FormDescription>
               <FormMessage />
             </FormItem>

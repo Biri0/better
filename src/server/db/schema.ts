@@ -128,6 +128,8 @@ export const bets = createTable("bet", (d) => ({
     .timestamp({ mode: "date", withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
+  fee: d.numeric({ precision: 3, scale: 2 }).notNull(),
+  lossCap: d.integer().notNull(),
 }));
 
 export const userBets = createTable(

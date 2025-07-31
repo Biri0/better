@@ -23,10 +23,8 @@ export default async function Bet({ searchParams }: PageProps) {
   const resolvedSearchParams = await searchParams;
   const betId = resolvedSearchParams.id;
 
-  // Get current user session
   const session = await auth();
 
-  // Get bet data with creator name
   const bet = betId
     ? await db
         .select({
@@ -38,6 +36,8 @@ export default async function Bet({ searchParams }: PageProps) {
           createdBy: bets.createdBy,
           createdAt: bets.createdAt,
           creatorName: users.name,
+          fee: bets.fee,
+          lossCap: bets.lossCap,
         })
         .from(bets)
         .innerJoin(users, eq(bets.createdBy, users.id))
@@ -46,12 +46,10 @@ export default async function Bet({ searchParams }: PageProps) {
 
   const betData = bet[0];
 
-  // Get bet options if bet exists
   const options = betData
     ? await db.select().from(betOptions).where(eq(betOptions.betId, betData.id))
     : [];
 
-  // Get user credits if user is logged in
   const userCredits = session?.user.id
     ? await db
         .select({ credits: users.credits })
@@ -120,6 +118,20 @@ export default async function Bet({ searchParams }: PageProps) {
               <p className="text-sm">
                 {new Date(betData.createdAt).toLocaleString()}
               </p>
+            </div>
+            <div>
+              <h3 className="text-muted-foreground mb-1 text-sm font-medium">
+                Fee
+              </h3>
+              <p className="text-sm">
+                {(Number(betData.fee) * 100).toFixed(1)}%
+              </p>
+            </div>
+            <div>
+              <h3 className="text-muted-foreground mb-1 text-sm font-medium">
+                Loss Cap
+              </h3>
+              <p className="text-sm">{betData.lossCap} credits</p>
             </div>
           </div>
 

@@ -44,4 +44,12 @@ export const formSchema = z.object({
     .min(2, {
       message: "You must provide odds for at least 2 options.",
     }),
+  fee: z
+    .number()
+    .min(0, { message: "Fee must be at least 0%." })
+    .max(0.25, { message: "Fee must be at most 25%." }),
+  lossCap: z
+    .number()
+    .int()
+    .min(1, { message: "Loss cap must be at least 1 credit." }),
 });
