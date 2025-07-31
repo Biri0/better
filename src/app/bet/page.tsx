@@ -146,7 +146,12 @@ export default async function Bet({ searchParams }: PageProps) {
                       <div className="flex flex-col space-y-4 sm:flex-row sm:items-end sm:space-y-0 sm:space-x-4">
                         <div className="flex-1">
                           <div className="mb-2 flex items-center justify-between">
-                            <h4 className="font-medium">{option.label}</h4>
+                            <div className="flex items-center space-x-2">
+                              <h4 className="font-medium">{option.label}</h4>
+                              <Badge variant="outline" className="text-xs">
+                                {Number(option.currentOdds).toFixed(2)}
+                              </Badge>
+                            </div>
                             <Badge
                               variant={
                                 option.status === "open"

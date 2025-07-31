@@ -36,10 +36,11 @@ export async function createBet(values: z.infer<typeof formSchema>) {
   }
 
   await db.insert(betOptions).values(
-    values.optionLabels.map((label) => ({
+    values.optionLabels.map((label, index) => ({
       label: label,
       status: "open" as const,
       betId: betId,
+      currentOdds: values.optionOdds[index]!.toFixed(2),
     })),
   );
 

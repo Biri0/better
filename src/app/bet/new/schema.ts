@@ -30,4 +30,18 @@ export const formSchema = z.object({
     .refine((options) => new Set(options).size === options.length, {
       message: "All options must be unique.",
     }),
+  optionOdds: z
+    .array(
+      z
+        .number()
+        .min(1.01, {
+          message: "Odds must be at least 1.01.",
+        })
+        .max(99.99, {
+          message: "Odds must be at most 99.99.",
+        }),
+    )
+    .min(2, {
+      message: "You must provide odds for at least 2 options.",
+    }),
 });

@@ -174,6 +174,7 @@ export const betOptions = createTable("bet_option", (d) => ({
     .references(() => bets.id),
   label: d.varchar({ length: 32 }).notNull(),
   status: betStatus().notNull().default("open"),
+  currentOdds: d.numeric({ precision: 4, scale: 2 }).notNull(),
 }));
 
 export const betOptionsRelations = relations(betOptions, ({ one }) => ({

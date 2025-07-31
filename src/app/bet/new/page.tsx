@@ -28,6 +28,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function NewBetPage() {
   const [options, setOptions] = useState<string[]>(["", ""]);
+  const [odds, setOdds] = useState<number[]>([1.5, 1.5]);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -37,22 +38,31 @@ export default function NewBetPage() {
       endTime: new Date(),
       expirationTime: new Date(),
       optionLabels: ["", ""],
+      optionOdds: [1.5, 1.5],
     },
   });
 
   const addOption = async () => {
     const newOptions = [...options, ""];
+    const newOdds = [...odds, 1.5];
     setOptions(newOptions);
+    setOdds(newOdds);
     form.setValue("optionLabels", newOptions);
+    form.setValue("optionOdds", newOdds);
     await form.trigger("optionLabels");
+    await form.trigger("optionOdds");
   };
 
   const removeOption = async (index: number) => {
     if (options.length > 2) {
       const newOptions = options.filter((_, i) => i !== index);
+      const newOdds = odds.filter((_, i) => i !== index);
       setOptions(newOptions);
+      setOdds(newOdds);
       form.setValue("optionLabels", newOptions);
+      form.setValue("optionOdds", newOdds);
       await form.trigger("optionLabels");
+      await form.trigger("optionOdds");
     }
   };
 
@@ -64,8 +74,16 @@ export default function NewBetPage() {
     await form.trigger("optionLabels");
   };
 
+  const updateOdds = async (index: number, value: number) => {
+    const newOdds = [...odds];
+    newOdds[index] = value;
+    setOdds(newOdds);
+    form.setValue("optionOdds", newOdds);
+    await form.trigger("optionOdds");
+  };
+
   const handleSubmit = async (data: FormData) => {
-    await createBet({ ...data, optionLabels: options });
+    await createBet({ ...data, optionLabels: options, optionOdds: odds });
   };
 
   return (
@@ -155,6 +173,19 @@ export default function NewBetPage() {
               Add Option
             </Button>
           </div>
+          <div className="flex items-end gap-2">
+            <div className="flex-1">
+              <FormLabel className="text-muted-foreground text-sm">
+                Option Label
+              </FormLabel>
+            </div>
+            <div className="w-24">
+              <FormLabel className="text-muted-foreground text-sm">
+                Odds
+              </FormLabel>
+            </div>
+            <div className="w-10"></div>
+          </div>
           {options.map((option, index) => (
             <div key={index} className="space-y-2">
               <div className="flex items-end gap-2">
@@ -175,6 +206,29 @@ export default function NewBetPage() {
                     </p>
                   )}
                 </div>
+                <div className="w-24">
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="1.01"
+                    max="99.99"
+                    placeholder="1.50"
+                    value={odds[index] ?? ""}
+                    onChange={(e) =>
+                      updateOdds(index, parseFloat(e.target.value) || 1.5)
+                    }
+                    className={
+                      form.formState.errors.optionOdds?.[index]
+                        ? "border-destructive"
+                        : ""
+                    }
+                  />
+                  {form.formState.errors.optionOdds?.[index] && (
+                    <p className="text-destructive mt-1 text-sm">
+                      {form.formState.errors.optionOdds[index]?.message}
+                    </p>
+                  )}
+                </div>
                 {options.length > 2 && (
                   <Button
                     type="button"
@@ -189,12 +243,19 @@ export default function NewBetPage() {
             </div>
           ))}
           <FormDescription>
-            Add at least 2 options for users to choose from.
+            Add at least 2 options for users to choose from. Each option needs a
+            label and initial odds.
           </FormDescription>
           {form.formState.errors.optionLabels &&
             !Array.isArray(form.formState.errors.optionLabels) && (
               <p className="text-destructive text-sm">
                 {form.formState.errors.optionLabels.message}
+              </p>
+            )}
+          {form.formState.errors.optionOdds &&
+            !Array.isArray(form.formState.errors.optionOdds) && (
+              <p className="text-destructive text-sm">
+                {form.formState.errors.optionOdds.message}
               </p>
             )}
         </div>
