@@ -37,6 +37,22 @@ export async function createBet(values: z.infer<typeof formSchema>): Promise<{
     };
   }
 
+  const minBettablePerOption = values.optionOdds.map((odds) =>
+    Math.floor(values.lossCap / odds),
+  );
+
+  const hasUnbettableOption = minBettablePerOption.some((minBet) => minBet < 1);
+
+  if (hasUnbettableOption) {
+    const maxOdds = Math.max(...values.optionOdds);
+    const minLossCapNeeded = Math.ceil(maxOdds);
+
+    return {
+      success: false,
+      error: `Cannot create bet: some options don't allow minimum betting. Either increase loss cap to at least ${minLossCapNeeded} credits or reduce the highest odds (currently ${maxOdds}).`,
+    };
+  }
+
   const result = await db.transaction(async (tx) => {
     const betResult = await tx
       .insert(bets)

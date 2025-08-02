@@ -30,6 +30,11 @@ export default function NewBetPage() {
   const [options, setOptions] = useState<string[]>(["", ""]);
   const [odds, setOdds] = useState<number[]>([1.5, 1.5]);
 
+  const getMaxBettable = (oddValue: number, lossCapValue: number) => {
+    if (!oddValue || !lossCapValue) return 0;
+    return Math.floor(lossCapValue / oddValue);
+  };
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -255,7 +260,18 @@ export default function NewBetPage() {
                 Odds
               </FormLabel>
             </div>
-            <div className="w-10"></div>
+            <div className="w-20">
+              <FormLabel className="text-muted-foreground text-sm">
+                Max bet
+              </FormLabel>
+            </div>
+            <div className="w-10">
+              {options.length > 2 && (
+                <FormLabel className="text-muted-foreground text-sm">
+                  Remove
+                </FormLabel>
+              )}
+            </div>
           </div>
           {options.map((option, index) => (
             <div key={index} className="space-y-2">
@@ -300,16 +316,33 @@ export default function NewBetPage() {
                     </p>
                   )}
                 </div>
-                {options.length > 2 && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => removeOption(index)}
+                <div className="w-20">
+                  <div
+                    className={`flex h-9 items-center justify-center text-xs ${
+                      getMaxBettable(
+                        odds[index] ?? 1.5,
+                        form.watch("lossCap"),
+                      ) === 0
+                        ? "text-red-500"
+                        : "text-muted-foreground"
+                    }`}
                   >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
+                    {getMaxBettable(odds[index] ?? 1.5, form.watch("lossCap"))}{" "}
+                    credits
+                  </div>
+                </div>
+                <div className="w-10">
+                  {options.length > 2 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => removeOption(index)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           ))}

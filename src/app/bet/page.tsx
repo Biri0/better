@@ -1,5 +1,5 @@
 import { db } from "~/server/db";
-import { bets, betOptions, users } from "~/server/db/schema";
+import { bets, betOptions, users, betsPlaced } from "~/server/db/schema";
 import { eq } from "drizzle-orm";
 import { Button } from "~/components/ui/button";
 import {
@@ -59,6 +59,19 @@ export default async function Bet({ searchParams }: PageProps) {
 
   const availableCredits = userCredits[0]?.credits ?? 0;
 
+  const wagers = betData
+    ? await db
+        .select({
+          userId: betsPlaced.userId,
+          optionId: betsPlaced.optionId,
+          staked: betsPlaced.staked,
+          createdAt: betsPlaced.createdAt,
+        })
+        .from(betsPlaced)
+        .innerJoin(betOptions, eq(betsPlaced.optionId, betOptions.optionId))
+        .where(eq(betOptions.betId, betData.id))
+    : [];
+
   if (!betData) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center py-2">
@@ -79,6 +92,11 @@ export default async function Bet({ searchParams }: PageProps) {
       </div>
     );
   }
+
+  const maxStakes = options.map((option) => {
+    const maxStake = betData.lossCap / Number(option.currentOdds);
+    return Math.min(Math.floor(maxStake), availableCredits);
+  });
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-4 py-8">
@@ -163,6 +181,10 @@ export default async function Bet({ searchParams }: PageProps) {
                               <Badge variant="outline" className="text-xs">
                                 {Number(option.currentOdds).toFixed(2)}
                               </Badge>
+                              <Badge variant="secondary" className="text-xs">
+                                Max: {maxStakes[options.indexOf(option)]}{" "}
+                                credits
+                              </Badge>
                             </div>
                             <Badge
                               variant={
@@ -192,7 +214,7 @@ export default async function Bet({ searchParams }: PageProps) {
                                 id={`bet-${option.optionId}`}
                                 type="number"
                                 min="1"
-                                max={availableCredits}
+                                max={maxStakes[options.indexOf(option)]}
                                 placeholder="0"
                                 className="w-full sm:w-24"
                                 disabled={availableCredits === 0}

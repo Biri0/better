@@ -159,7 +159,6 @@ export const userBetsRelations = relations(userBets, ({ one }) => ({
 export const betsRelations = relations(bets, ({ many }) => ({
   userBets: many(userBets),
   betOptions: many(betOptions),
-  betsPlaced: many(betsPlaced),
 }));
 
 export const betStatus = pgEnum("bet_status", ["open", "won", "lost"]);
@@ -179,8 +178,9 @@ export const betOptions = createTable("bet_option", (d) => ({
   currentOdds: d.numeric({ precision: 4, scale: 2 }).notNull(),
 }));
 
-export const betOptionsRelations = relations(betOptions, ({ one }) => ({
+export const betOptionsRelations = relations(betOptions, ({ one, many }) => ({
   bet: one(bets, { fields: [betOptions.betId], references: [bets.id] }),
+  betsPlaced: many(betsPlaced),
 }));
 
 export const betsPlaced = createTable(
@@ -190,10 +190,10 @@ export const betsPlaced = createTable(
       .varchar({ length: 255 })
       .notNull()
       .references(() => users.id),
-    betId: d
+    optionId: d
       .varchar({ length: 255 })
       .notNull()
-      .references(() => bets.id),
+      .references(() => betOptions.optionId),
     staked: d.integer().notNull(),
     createdAt: d
       .timestamp({ mode: "date", withTimezone: true })
@@ -201,13 +201,16 @@ export const betsPlaced = createTable(
       .defaultNow(),
   }),
   (t) => [
-    primaryKey({ columns: [t.userId, t.betId] }),
+    primaryKey({ columns: [t.userId, t.optionId] }),
     index("bets_placed_user_idx").on(t.userId),
-    index("bets_placed_bet_idx").on(t.betId),
+    index("bets_placed_option_idx").on(t.optionId),
   ],
 );
 
 export const betsPlacedRelations = relations(betsPlaced, ({ one }) => ({
   user: one(users, { fields: [betsPlaced.userId], references: [users.id] }),
-  bet: one(bets, { fields: [betsPlaced.betId], references: [bets.id] }),
+  betOption: one(betOptions, {
+    fields: [betsPlaced.optionId],
+    references: [betOptions.optionId],
+  }),
 }));
