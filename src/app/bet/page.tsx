@@ -1,5 +1,5 @@
 import { db } from "~/server/db";
-import { bets, betOptions, users, betsPlaced } from "~/server/db/schema";
+import { bets, betOptions, users } from "~/server/db/schema";
 import { eq } from "drizzle-orm";
 import { Button } from "~/components/ui/button";
 import {
@@ -58,19 +58,6 @@ export default async function Bet({ searchParams }: PageProps) {
     : [];
 
   const availableCredits = userCredits[0]?.credits ?? 0;
-
-  const wagers = betData
-    ? await db
-        .select({
-          userId: betsPlaced.userId,
-          optionId: betsPlaced.optionId,
-          staked: betsPlaced.staked,
-          createdAt: betsPlaced.createdAt,
-        })
-        .from(betsPlaced)
-        .innerJoin(betOptions, eq(betsPlaced.optionId, betOptions.optionId))
-        .where(eq(betOptions.betId, betData.id))
-    : [];
 
   if (!betData) {
     return (
