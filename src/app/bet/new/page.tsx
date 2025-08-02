@@ -146,7 +146,10 @@ export default function NewBetPage() {
             <FormItem>
               <FormLabel>End time</FormLabel>
               <FormControl>
-                <Calendar24 {...field} />
+                <Calendar24
+                  value={field.value}
+                  onChangeAction={field.onChange}
+                />
               </FormControl>
               <FormDescription>
                 Please enter an end time for your bet.
@@ -163,7 +166,10 @@ export default function NewBetPage() {
             <FormItem>
               <FormLabel>Expiration</FormLabel>
               <FormControl>
-                <Calendar24 {...field} />
+                <Calendar24
+                  value={field.value}
+                  onChangeAction={field.onChange}
+                />
               </FormControl>
               <FormDescription>
                 Please enter an expiration for your bet.

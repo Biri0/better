@@ -40,6 +40,9 @@ export default function Calendar24({
       setTime(
         `${value.getHours().toString().padStart(2, "0")}:${value.getMinutes().toString().padStart(2, "0")}`,
       );
+    } else {
+      setDate(undefined);
+      setTime("");
     }
   }, [value]);
 
@@ -50,9 +53,11 @@ export default function Calendar24({
 
       if (currentDate && currentTime && currentTime.trim() !== "") {
         const [hours, minutes] = currentTime.split(":").map(Number);
-        const combined = new Date(currentDate);
-        combined.setHours(hours ?? 0, minutes ?? 0, 0, 0);
-        onChange?.(combined);
+        if (hours !== undefined && minutes !== undefined) {
+          const combined = new Date(currentDate);
+          combined.setHours(hours, minutes, 0, 0);
+          onChange?.(combined);
+        }
       } else if (!currentDate || !currentTime || currentTime.trim() === "") {
         onChange?.(undefined);
       }
@@ -109,6 +114,7 @@ export default function Calendar24({
           id="time-picker"
           value={time}
           onChange={(e) => handleTimeChange(e.target.value)}
+          placeholder="--:--"
           className="bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
         />
       </div>
