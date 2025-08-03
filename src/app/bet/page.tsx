@@ -9,11 +9,10 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
 import { Badge } from "~/components/ui/badge";
 import Link from "next/link";
 import { auth } from "~/server/auth";
+import { BetForm } from "./bet-form";
 
 type PageProps = {
   searchParams: Promise<Record<string, string>>;
@@ -156,79 +155,55 @@ export default async function Bet({ searchParams }: PageProps) {
           {options.length > 0 && (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Betting Options</h3>
-              <div className="grid gap-4">
-                {options.map((option) => (
-                  <Card key={option.optionId} className="relative">
-                    <CardContent className="p-4">
-                      <div className="flex flex-col space-y-4 sm:flex-row sm:items-end sm:space-y-0 sm:space-x-4">
-                        <div className="flex-1">
-                          <div className="mb-2 flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <h4 className="font-medium">{option.label}</h4>
-                              <Badge variant="outline" className="text-xs">
-                                {Number(option.currentOdds).toFixed(2)}
-                              </Badge>
-                              <Badge variant="secondary" className="text-xs">
-                                Max: {maxStakes[options.indexOf(option)]}{" "}
-                                credits
-                              </Badge>
-                            </div>
-                            <Badge
-                              variant={
-                                option.status === "open"
-                                  ? "default"
-                                  : option.status === "won"
-                                    ? "secondary"
-                                    : "destructive"
-                              }
-                              className="text-xs"
-                            >
-                              {option.status}
-                            </Badge>
-                          </div>
-                        </div>
-
-                        {session?.user && option.status === "open" && (
-                          <div className="flex flex-col space-y-2 sm:flex-row sm:items-end sm:space-y-0 sm:space-x-2">
-                            <div className="space-y-1">
-                              <Label
-                                htmlFor={`bet-${option.optionId}`}
+              {session?.user ? (
+                <BetForm
+                  options={options}
+                  availableCredits={availableCredits}
+                  maxStakes={maxStakes}
+                />
+              ) : (
+                <div className="grid gap-4">
+                  {options.map((option) => (
+                    <Card key={option.optionId} className="relative">
+                      <CardContent className="p-4">
+                        <div className="flex flex-col space-y-4 sm:flex-row sm:items-end sm:space-y-0 sm:space-x-4">
+                          <div className="flex-1">
+                            <div className="mb-2 flex items-center justify-between">
+                              <div className="flex items-center space-x-2">
+                                <h4 className="font-medium">{option.label}</h4>
+                                <Badge variant="outline" className="text-xs">
+                                  {Number(option.currentOdds).toFixed(2)}
+                                </Badge>
+                                <Badge variant="secondary" className="text-xs">
+                                  Max: {maxStakes[options.indexOf(option)]}{" "}
+                                  credits
+                                </Badge>
+                              </div>
+                              <Badge
+                                variant={
+                                  option.status === "open"
+                                    ? "default"
+                                    : option.status === "won"
+                                      ? "secondary"
+                                      : "destructive"
+                                }
                                 className="text-xs"
                               >
-                                Credits to bet
-                              </Label>
-                              <Input
-                                id={`bet-${option.optionId}`}
-                                type="number"
-                                min="1"
-                                max={maxStakes[options.indexOf(option)]}
-                                placeholder="0"
-                                className="w-full sm:w-24"
-                                disabled={availableCredits === 0}
-                              />
+                                {option.status}
+                              </Badge>
                             </div>
-                            <Button
-                              size="sm"
-                              disabled={availableCredits === 0}
-                              className="w-full sm:w-auto"
-                            >
-                              Place Bet
-                            </Button>
                           </div>
-                        )}
-
-                        {!session?.user && (
                           <div className="text-muted-foreground text-sm">
                             <Link href="/api/auth/signin" className="underline">
                               Sign in to place bets
                             </Link>
                           </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
