@@ -10,27 +10,6 @@ import { type AdapterAccount } from "next-auth/adapters";
  */
 export const createTable = pgTableCreator((name) => `better_${name}`);
 
-export const posts = createTable(
-  "post",
-  (d) => ({
-    id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
-    name: d.varchar({ length: 256 }),
-    createdById: d
-      .varchar({ length: 255 })
-      .notNull()
-      .references(() => users.id),
-    createdAt: d
-      .timestamp({ withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
-  }),
-  (t) => [
-    index("created_by_idx").on(t.createdById),
-    index("name_idx").on(t.name),
-  ],
-);
-
 export const users = createTable("user", (d) => ({
   id: d
     .varchar({ length: 255 })
@@ -51,7 +30,6 @@ export const users = createTable("user", (d) => ({
 
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
-  userBets: many(userBets),
   betsPlaced: many(betsPlaced),
 }));
 
@@ -132,33 +110,9 @@ export const bets = createTable("bet", (d) => ({
   lossCap: d.integer().notNull(),
 }));
 
-export const userBets = createTable(
-  "user_bet",
-  (d) => ({
-    userId: d
-      .varchar({ length: 255 })
-      .notNull()
-      .references(() => users.id),
-    betId: d
-      .varchar({ length: 255 })
-      .notNull()
-      .references(() => bets.id),
-  }),
-  (t) => [
-    primaryKey({ columns: [t.userId, t.betId] }),
-    index("user_bet_user_idx").on(t.userId),
-    index("user_bet_bet_idx").on(t.betId),
-  ],
-);
-
-export const userBetsRelations = relations(userBets, ({ one }) => ({
-  user: one(users, { fields: [userBets.userId], references: [users.id] }),
-  bet: one(bets, { fields: [userBets.betId], references: [bets.id] }),
-}));
-
 export const betsRelations = relations(bets, ({ many }) => ({
-  userBets: many(userBets),
   betOptions: many(betOptions),
+  betsPlaced: many(betsPlaced),
 }));
 
 export const betStatus = pgEnum("bet_status", ["open", "won", "lost"]);
@@ -195,6 +149,7 @@ export const betsPlaced = createTable(
       .notNull()
       .references(() => betOptions.optionId),
     staked: d.integer().notNull(),
+    odds: d.numeric({ precision: 4, scale: 2 }).notNull(),
     createdAt: d
       .timestamp({ mode: "date", withTimezone: true })
       .notNull()
